@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<!-- 注意：struts里面配置了action，但没有具体的action类的时候tomcat是启动不了的 -->
+<struts>
+	<!-- struts的常量,会覆盖default.properties中的常量值 -->
+	<!--开发模式,debug不需要重启服务器  -->
+	<constant name="struts.devMode" value="true"></constant>
+	<!--解决中文乱码   编码 internationalization-->
+	<constant name="struts.i18n.encoding" value="utf-8"></constant>
+	<!-- action的访问扩展名 -->
+	<constant name="struts.action.extension" value="action,do,html,,"></constant>
+	<!-- 开启动态方法访问 -->
+	<constant name="struts.enable.DynamicMethodInvocation" value="true"></constant>
+	
+	
+	<package name="default" namespace="/" extends="struts-default">
+		
+		<!-- 自定义拦截器 -->
+		<interceptors>
+			<!-- 自定义拦截器栈 -->
+			<interceptor-stack name="myStack">
+				<interceptor-ref name="defaultStack"></interceptor-ref>
+				<interceptor-ref name="myTimer"></interceptor-ref>
+				<interceptor-ref name="myMethod"></interceptor-ref>
+			</interceptor-stack>
+			
+			<interceptor name="myTimer" class="interceptor.TimeIntercepter"></interceptor>
+			<interceptor name="myMethod" class="interceptor.TimeIntercepter4">
+				<!-- 设置访问哪些方法时不使用拦截器 
+					注意：1.别忘了如果要设置对方法起不起作用，那么这个拦截器就需要继承MethodFilterInterceptor接口，因为这接口中有将方法绑定到参数的功能
+						2.多个方法间用逗号隔开
+						3..别忘了引到自定义栈中
+					4.这里表示的是TimeIntercepter4这个拦截器不会对doBiz这个方法起作用，但myTimer还是会起作用的
+				-->
+				<param name="excludeMethods">doBiz</param>
+				
+				<!-- 设置访问哪些方法时使用拦截器  -->
+				<!-- <param name="includeMethods">doBiz</param> -->
+			</interceptor>
+		</interceptors>
+		
+		
+		<!-- 全局的拦截器，默认引入的拦截器 -->
+		<default-interceptor-ref name="myStack"></default-interceptor-ref>
+		
+		<action name="index" class="action.LoginAction">
+			<result name="success">/index.jsp</result>
+			<!-- <result name="login" type="redirect">/login.jsp</result> -->
+			
+			<!-- addFiledError默认返回的是input视图 -->
+			<result name="input">/login.jsp</result>
+		</action>
+		
+		<!-- 此方式可以对多个方法进行校验，具体校验哪个方法由method属性决定 -->
+		<action name="index2" class="action.LoginAction" method="execute2">
+			<result name="success">/index.jsp</result>
+			<result name="input">/login.jsp</result>
+		</action>
+		
+		<!-- 此方式对execute（）方法不进行校验，可以直接登录 -->
+		<action name="index3" class="action.LoginAction2" method="execute">
+			<result name="success">/index.jsp</result>
+			<result name="input">/login.jsp</result>
+		</action>
+		<!-- 框架验证，注意：xml文件命名，前半部分要求是class的类名 -->
+		<action name="index4" class="action.LoginAction3" method="execute2">
+			<result name="success">/index.jsp</result>
+			<result name="input">/login.jsp</result>
+		</action>
+		
+		<!-- 框架验证，局部验证，文件中间的别名对应该action的name属性时，表示文件是只对该action的验证 -->
+		<action name="index41" class="action.LoginAction4" method="execute">
+			<result name="success">/index.jsp</result>
+			<result name="input">/login.jsp</result>
+		</action>
+		<action name="index42" class="action.LoginAction4" method="execute2">
+			<result name="success">/index.jsp</result>
+			<result name="input">/login.jsp</result>
+		</action>
+		
+		<!-- 拦截器的使用 -->
+		<action name="inter" class="action.TimeIntercepterAction01">
+			<result name="success">/index.jsp</result>
+			<!-- 引用自定义拦截器 
+				注意：
+				1.一旦引用了自己的拦截器会覆盖默认的拦截器，因此还要显示的引入默认的拦截器defaultStack
+				2.自定义拦截器放的位置也有要求，要贴近被执行的Action，不然它还会计算在执行Action前执行默认拦截器的时间
+				3.可以自定义一个自己的Stack 将defaultStack和其它自定义拦截器放进自定义栈中，引用栈即可
+				4.自定义多个拦截器，具有先后顺序，配置在前面的拦截器先进入Action，但是比后进入的要晚离开，即先进后出
+				5.使用全局默认的拦截器，在Action里就可以省略引入自己的拦截器栈了
+				6.如果设置了全局默认的拦截器，Action中再出现相同的拦截器后，那么局部的拦截器将会覆盖掉全局的
+			-->
+			<!-- <interceptor-ref name="defaultStack"></interceptor-ref> -->
+			<!-- <interceptor-ref name="myStack"></interceptor-ref> -->
+		</action>
+		
+		<!-- 这里会使用全局默认的拦截器，但设置了 -->
+		<action name="inter2" class="action.TimeIntercepterAction01" method="doBiz">
+			<result name="success">/index.jsp</result>
+			
+		</action>
+	</package>
+</struts>
