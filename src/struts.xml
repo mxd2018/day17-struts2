@@ -14,9 +14,11 @@
 	<constant name="struts.action.extension" value="action,do,html,,"></constant>
 	<!-- 开启动态方法访问 -->
 	<constant name="struts.enable.DynamicMethodInvocation" value="true"></constant>
+	<!-- 全局文件上传字节数限制 -->
+	<constant name="struts.multipart.maxSize" value="200000"></constant>
 	
-	
-	<package name="default" namespace="/" extends="struts-default">
+	<!-- 注意：1.如果是ajax传递json数据，extends就不能=struts-default，应该是json-default，该包里面除了json包外还继承了struts-default	 -->
+	<package name="default" namespace="/" extends="json-default">
 		
 		<!-- 自定义拦截器 -->
 		<interceptors>
@@ -100,7 +102,39 @@
 		<!-- 这里会使用全局默认的拦截器，但设置了 -->
 		<action name="inter2" class="action.TimeIntercepterAction01" method="doBiz">
 			<result name="success">/index.jsp</result>
-			
 		</action>
+		
+		<!-- 文件上传 -->
+		<action name="upload1" class="action.FileUploadAction">
+			<result>/index.jsp</result>
+			<interceptor-ref name="defaultStack"></interceptor-ref>
+			<interceptor-ref name="fileUpload">
+				<param name="maximumSize">100000</param>
+				<!-- 允许上传的文件扩展名 -->
+				<param name="allowedExtensions">jpg</param>
+			</interceptor-ref>
+		</action>
+		<!-- 多文件上传 -->
+		<action name="upload2" class="action.FileUploadAction2">
+			<result>/index.jsp</result>
+			<interceptor-ref name="defaultStack"></interceptor-ref>
+			<interceptor-ref name="fileUpload">
+				<param name="maximumSize">100000</param>
+				<!-- 允许上传的文件扩展名 -->
+				<param name="allowedExtensions">jpg</param>
+			</interceptor-ref>
+		</action>
+		
+		<!-- 文件下载 -->
+		<action name="download" class="action.FileDownLoadAction">
+			<result name="success" type="stream">
+				<!-- 指定输入流 :输入流就是inputName，输出流就是outputName-->
+				<param name="inputName">is</param>
+				<!-- 限定下载类型是附件形式,文件名称为filename -->
+				<param name="ContentDisposition">attachment;filename=${filename}</param>
+				<param name="ContentType">application/octet-stream</param>
+			</result>
+		</action>
+		
 	</package>
 </struts>

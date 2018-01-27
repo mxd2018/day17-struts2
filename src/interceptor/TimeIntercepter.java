@@ -25,7 +25,7 @@ public class TimeIntercepter extends AbstractInterceptor{
 		
 		long end = System.currentTimeMillis();
 		//离开控制器之后要执行的功能
-		System.out.println("到达控制器之前的时间为："+end);
+		System.out.println("离开控制器之后的时间为："+end);
 		
 		System.out.println("控制器的执行时间："+(end-before));
 		return result;
